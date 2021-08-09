@@ -1,5 +1,7 @@
 # Range Coder
 
+![test](https://github.com/diegodox/rangecoder-cpp17/actions/workflows/test.yml/badge.svg)
+
 Header-only range coder library.
 
 ## Usage
