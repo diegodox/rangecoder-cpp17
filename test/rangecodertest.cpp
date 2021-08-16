@@ -35,19 +35,19 @@ public:
         }
         std::cout << std::endl;
     }
-    auto c_freq(int index) -> rangecoder::range_t const
+    rangecoder::range_t c_freq(int index) const
     {
         return m_c_freq[index];
     }
-    auto cum_freq(int index) -> rangecoder::range_t const
+    rangecoder::range_t cum_freq(int index) const
     {
         return m_cum_freq[index];
     }
-    auto min_index() -> int const
+    int min_index() const
     {
         return 0;
     }
-    auto max_index() -> int const
+    int max_index() const
     {
         return m_max_index;
     }
@@ -58,7 +58,7 @@ private:
     std::vector<rangecoder::range_t> m_cum_freq;
 };
 
-auto helper_enc_dec(std::vector<int> &data) -> std::vector<int>
+auto helper_enc_dec_freqtable(std::vector<int> &data) -> std::vector<int>
 {
     // pmodel
     std::cout << "create pmodel" << std::endl;
@@ -110,7 +110,7 @@ TEST(RangeCoderTest, EncDecTest)
 {
     auto data =
         std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
-    EXPECT_EQ(helper_enc_dec(data), data);
+    EXPECT_EQ(helper_enc_dec_freqtable(data), data);
     std::cout << "finish" << std::endl;
 }
 

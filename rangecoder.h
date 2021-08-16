@@ -32,20 +32,20 @@ namespace rangecoder
     {
     public:
         // Accumrate frequency of index, i.e. sum of frequency of range [min_index, index).
-        virtual auto cum_freq(int index) -> range_t const = 0;
+        virtual range_t cum_freq(int index) const = 0;
         // Frequency of index
-        virtual auto c_freq(int index) -> range_t const = 0;
-        auto total_freq() -> range_t const
+        virtual range_t c_freq(int index) const = 0;
+        range_t total_freq() const
         {
             return cum_freq(max_index()) + c_freq(max_index());
         };
         // Returns min index, the first valid index.
         // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual auto min_index() -> int const = 0;
+        virtual int min_index() const = 0;
         // Returns max index, the last valid index.
         // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual auto max_index() -> int const = 0;
-        auto index_is_valid(int index) -> bool
+        virtual int max_index() const = 0;
+        bool index_is_valid(int index)
         {
             return min_index() <= index && index <= max_index();
         }
