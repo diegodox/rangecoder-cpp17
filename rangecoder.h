@@ -286,5 +286,40 @@ namespace rangecoder
         std::queue<byte_t> m_bytes;
         range_t m_data;
     };
+
+    template <int N = 256>
+    class UnifromDistribution : public PModel
+    {
+    public:
+        constexpr UnifromDistribution()
+        {
+        }
+        range_t c_freq(int index) const
+        {
+            return 1;
+        }
+        range_t cum_freq(int index) const
+        {
+            return index;
+        }
+        int min_index() const
+        {
+            return 0;
+        }
+        int max_index() const
+        {
+            return N - 1;
+        }
+        void print()
+        {
+            std::cout << std::endl;
+            std::cout << "UNIFORM DIST" << std::endl;
+            for (auto i = min_index(); i <= max_index(); i++)
+            {
+                std::cout << "idx: " << i << ", c: " << c_freq(i) << ", cum: " << cum_freq(i) << std::endl;
+            }
+            std::cout << std::endl;
+        }
+    };
 }
 #endif
