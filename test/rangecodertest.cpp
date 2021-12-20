@@ -110,7 +110,7 @@ auto test_uniform(std::vector<int> &data) -> std::vector<int>
 {
     // pmodel
     std::cout << "create pmodel" << std::endl;
-    auto pmodel = rangecoder::UnifromDistribution();
+    auto pmodel = rangecoder::UniformDistribution();
     // encode
     std::cout << "encode" << std::endl;
     auto enc = rangecoder::RangeEncoder();
@@ -160,7 +160,7 @@ TEST(RangeCoderTest, EncDecTest)
     std::cout << "finish" << std::endl;
 }
 
-TEST(RangeCoderTest, UnifromDistributionTest)
+TEST(RangeCoderTest, UniformDistributionTest)
 {
     auto data =
         std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};

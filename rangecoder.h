@@ -31,7 +31,7 @@ namespace rangecoder
     class PModel
     {
     public:
-        // Accumrate frequency of index, i.e. sum of frequency of range [min_index, index).
+        // Accumulate frequency of index, i.e. sum of frequency of range [min_index, index).
         virtual range_t cum_freq(int index) const = 0;
         // Frequency of index
         virtual range_t c_freq(int index) const = 0;
@@ -288,10 +288,10 @@ namespace rangecoder
     };
 
     template <int N = 256>
-    class UnifromDistribution : public PModel
+    class UniformDistribution : public PModel
     {
     public:
-        constexpr UnifromDistribution()
+        constexpr UniformDistribution()
         {
         }
         range_t c_freq(int index) const
