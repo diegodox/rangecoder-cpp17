@@ -31,7 +31,7 @@ namespace rangecoder
     class PModel
     {
     public:
-        // Accumulate frequency of index, i.e. sum of frequency of range [min_index, index).
+        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
         virtual range_t cum_freq(int index) const = 0;
         // Frequency of index
         virtual range_t c_freq(int index) const = 0;
