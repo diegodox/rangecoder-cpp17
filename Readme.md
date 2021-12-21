@@ -52,6 +52,6 @@ int main() {
         decoded.push_back(decoder.decode(pmodel));
     }
 
-    assert(sequence_of_data, decoded);
+    assert(sequence_of_data == decoded);
 }
 ```
