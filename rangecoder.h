@@ -110,12 +110,12 @@ namespace rangecoder
 
     protected:
         auto
-        lower_bound() -> range_t const
+        lower_bound() const -> range_t
         {
             return m_lower_bound;
         };
 
-        auto range() -> range_t const
+        auto range() const -> range_t
         {
             return m_range;
         };
@@ -152,7 +152,7 @@ namespace rangecoder
             }
         };
 
-        auto upper_bound() -> uint64_t const
+        auto upper_bound() const -> uint64_t
         {
             return m_lower_bound + m_range;
         };
@@ -254,7 +254,7 @@ namespace rangecoder
 
     private:
         // binary search encoded index
-        auto binary_search_encoded_index(const PModel &pmodel) -> const int
+        auto binary_search_encoded_index(const PModel &pmodel) const -> int
         {
             auto left = pmodel.min_index();
             auto right = pmodel.max_index();
