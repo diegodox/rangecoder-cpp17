@@ -165,7 +165,7 @@ namespace rangecoder
     {
     public:
         // Returns number of bytes stabled.
-        auto encode(PModel &pmodel, int index) -> int
+        auto encode(const PModel &pmodel, int index) -> int
         {
             auto bytes = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
 #ifdef RANGECODER_VERBOSE
@@ -231,7 +231,7 @@ namespace rangecoder
 
         // Returns index of pmodel used to encode.
         // pmodel **must** be same as used to encode.
-        auto decode(PModel &pmodel) -> int
+        auto decode(const PModel &pmodel) -> int
         {
             auto index = binary_search_encoded_index(pmodel);
             auto n = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
@@ -254,7 +254,7 @@ namespace rangecoder
 
     private:
         // binary search encoded index
-        auto binary_search_encoded_index(PModel &pmodel) -> const int
+        auto binary_search_encoded_index(const PModel &pmodel) -> const int
         {
             auto left = pmodel.min_index();
             auto right = pmodel.max_index();
