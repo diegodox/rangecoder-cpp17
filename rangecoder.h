@@ -217,11 +217,9 @@ namespace rangecoder
     class RangeDecoder : RangeCoder
     {
     public:
-        RangeDecoder() = delete;
-
-        RangeDecoder(std::queue<byte_t> bytes)
+        void start(std::queue<byte_t> bytes)
         {
-            m_bytes = bytes;
+            m_bytes = std::move(bytes);
 
             for (auto i = 0; i < 8; i++)
             {

@@ -92,7 +92,8 @@ auto helper_enc_dec_freqtable(std::vector<int> &data) -> std::vector<int>
         que.push(byte);
     }
     std::cout << "decode" << std::endl;
-    auto dec = rangecoder::RangeDecoder(que);
+    auto dec = rangecoder::RangeDecoder();
+    dec.start(que);
     auto decoded = std::vector<int>();
     for (int i = 0; i < data.size(); i++)
     {
@@ -138,7 +139,8 @@ auto test_uniform(std::vector<int> &data) -> std::vector<int>
         que.push(byte);
     }
     std::cout << "decode" << std::endl;
-    auto dec = rangecoder::RangeDecoder(que);
+    auto dec = rangecoder::RangeDecoder();
+    dec.start(que);
     auto decoded = std::vector<int>();
     for (int i = 0; i < data.size(); i++)
     {
