@@ -100,7 +100,7 @@ namespace rangecoder
             return tmp;
         };
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -187,7 +187,7 @@ namespace rangecoder
             return m_bytes;
         }
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -242,7 +242,7 @@ namespace rangecoder
             return static_cast<int>(index);
         };
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -310,7 +310,7 @@ namespace rangecoder
         {
             return N - 1;
         }
-        void print()
+        void print() const
         {
             std::cout << std::endl;
             std::cout << "UNIFORM DIST" << std::endl;
