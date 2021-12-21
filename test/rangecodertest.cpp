@@ -25,7 +25,7 @@ public:
             m_cum_freq[i + 1] = m_cum_freq[i] + m_c_freq[i];
         }
     }
-    void print()
+    void print() const
     {
         std::cout << std::endl;
         std::cout << "FREQ TABLE" << std::endl;
