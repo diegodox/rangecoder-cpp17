@@ -290,7 +290,7 @@ namespace rangecoder
         range_t m_data;
     };
 
-    template <int N = 256>
+    template<int N = 256>
     class UniformDistribution : public PModel
     {
     public:
@@ -324,5 +324,5 @@ namespace rangecoder
             std::cout << std::endl;
         }
     };
-}
+}// namespace rangecoder
 #endif
