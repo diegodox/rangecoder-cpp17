@@ -1,8 +1,8 @@
-#include <iostream>
 #include <algorithm>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
+
 #include <gtest/gtest.h>
 
 #define RANGECODER_VERBOSE
