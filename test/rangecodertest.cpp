@@ -154,16 +154,14 @@ auto test_uniform(const std::vector<int> &data) -> std::vector<int>
 
 TEST(RangeCoderTest, EncDecTest)
 {
-    const auto data =
-            std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
+    const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(helper_enc_dec_freqtable(data), data);
     std::cout << "finish" << std::endl;
 }
 
 TEST(RangeCoderTest, UniformDistributionTest)
 {
-    const auto data =
-            std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
+    const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(test_uniform(data), data);
     std::cout << "finish" << std::endl;
 }
