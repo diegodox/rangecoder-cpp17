@@ -1,11 +1,14 @@
 #pragma once
 #ifndef RANGECODER_H_
 #define RANGECODER_H_
-#include <stdint.h>
+#include <iomanip>
+#include <iostream>
 #include <limits>
 #include <optional>
-#include <vector>
 #include <queue>
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 namespace rangecoder
 {
