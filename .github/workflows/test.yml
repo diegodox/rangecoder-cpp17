@@ -23,6 +23,5 @@ jobs:
         cmake --build .
     - name: run test
       run: test/build/rangecodertest
-
-- name: clang-format Check
-  uses: jidicula/clang-format-action@v4.4.0
+    - name: clang-format Check
+      uses: jidicula/clang-format-action@v4.4.0
