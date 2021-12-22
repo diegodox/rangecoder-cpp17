@@ -23,5 +23,10 @@ jobs:
         cmake --build .
     - name: run test
       run: test/build/rangecodertest
-    - name: clang-format Check
+
+  formatting-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run clang-format style check for C/C++/Protobuf programs.
       uses: jidicula/clang-format-action@v4.4.0
