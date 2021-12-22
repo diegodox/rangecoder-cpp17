@@ -102,7 +102,7 @@ namespace rangecoder
             return tmp;
         };
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -112,12 +112,12 @@ namespace rangecoder
 
     protected:
         auto
-        lower_bound() -> range_t const
+        lower_bound() const -> range_t
         {
             return m_lower_bound;
         };
 
-        auto range() -> range_t const
+        auto range() const -> range_t
         {
             return m_range;
         };
@@ -150,7 +150,7 @@ namespace rangecoder
             return shift_byte();
         };
 
-        auto upper_bound() -> uint64_t const
+        auto upper_bound() const -> uint64_t
         {
             return m_lower_bound + m_range;
         };
@@ -163,7 +163,7 @@ namespace rangecoder
     {
     public:
         // Returns number of bytes stabled.
-        auto encode(PModel &pmodel, int index) -> int
+        auto encode(const PModel &pmodel, int index) -> int
         {
             auto bytes = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
 #ifdef RANGECODER_VERBOSE
@@ -185,7 +185,7 @@ namespace rangecoder
             return m_bytes;
         }
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -229,7 +229,7 @@ namespace rangecoder
 
         // Returns index of pmodel used to encode.
         // pmodel **must** be same as used to encode.
-        auto decode(PModel &pmodel) -> int
+        auto decode(const PModel &pmodel) -> int
         {
             auto index = binary_search_encoded_index(pmodel);
             auto n = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
@@ -240,7 +240,7 @@ namespace rangecoder
             return static_cast<int>(index);
         };
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -252,7 +252,7 @@ namespace rangecoder
 
     private:
         // binary search encoded index
-        auto binary_search_encoded_index(PModel &pmodel) -> const int
+        auto binary_search_encoded_index(const PModel &pmodel) const -> int
         {
             auto left = pmodel.min_index();
             auto right = pmodel.max_index();
@@ -308,7 +308,7 @@ namespace rangecoder
         {
             return N - 1;
         }
-        void print()
+        void print() const
         {
             std::cout << std::endl;
             std::cout << "UNIFORM DIST" << std::endl;
