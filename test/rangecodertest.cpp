@@ -11,7 +11,7 @@
 class FreqTable : public rangecoder::PModel
 {
 public:
-    FreqTable(const std::vector<int> &data, int max_index)
+    FreqTable(const std::vector<int> &data, const int max_index)
     {
         m_max_index = max_index;
         m_c_freq = std::vector<rangecoder::range_t>(max_index + 1, 0);
@@ -35,11 +35,11 @@ public:
         }
         std::cout << std::endl;
     }
-    rangecoder::range_t c_freq(int index) const
+    rangecoder::range_t c_freq(const int index) const
     {
         return m_c_freq[index];
     }
-    rangecoder::range_t cum_freq(int index) const
+    rangecoder::range_t cum_freq(const int index) const
     {
         return m_cum_freq[index];
     }
