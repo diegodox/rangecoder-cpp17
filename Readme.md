@@ -47,7 +47,8 @@ int main() {
 
     // Decode
     auto decoded = std::vector<int>();
-    auto decoder = rangecoder::RangeDecoder(bytes_queue);
+    auto decoder = rangecoder::RangeDecoder();
+    decoder.start(bytes_queue);
     for (int i = 0; i < sequence_of_data.size(); i++){
         decoded.push_back(decoder.decode(pmodel));
     }

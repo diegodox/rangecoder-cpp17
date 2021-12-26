@@ -111,8 +111,17 @@ namespace rangecoder
         }
 
     protected:
-        auto
-        lower_bound() const -> range_t
+        void lower_bound(const range_t lower_bound)
+        {
+            m_lower_bound = lower_bound;
+        };
+
+        void range(const range_t range)
+        {
+            m_range = range;
+        };
+
+        auto lower_bound() const -> range_t
         {
             return m_lower_bound;
         };
@@ -215,11 +224,11 @@ namespace rangecoder
     class RangeDecoder : RangeCoder
     {
     public:
-        RangeDecoder() = delete;
-
-        RangeDecoder(std::queue<byte_t> bytes)
+        void start(std::queue<byte_t> bytes)
         {
-            m_bytes = bytes;
+            m_bytes = std::move(bytes);
+            lower_bound(0);
+            range(std::numeric_limits<range_t>::max());
 
             for (auto i = 0; i < 8; i++)
             {
