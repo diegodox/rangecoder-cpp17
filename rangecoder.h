@@ -14,8 +14,10 @@ namespace rangecoder
     using range_t = uint64_t;
     using byte_t = uint8_t;
 
-    const range_t TOP8 = range_t(1) << (64 - 8);
-    const range_t TOP16 = range_t(1) << (64 - 16);
+namespace local
+{
+    const auto TOP8 = range_t(1) << (64 - 8);
+    const auto TOP16 = range_t(1) << (64 - 16);
 
     auto hex_zero_filled(range_t bytes) -> std::string
     {
@@ -29,29 +31,6 @@ namespace rangecoder
         sformatter << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(byte);
         return sformatter.str();
     }
-
-    class PModel
-    {
-    public:
-        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
-        virtual range_t cum_freq(int index) const = 0;
-        // Frequency of index
-        virtual range_t c_freq(int index) const = 0;
-        range_t total_freq() const
-        {
-            return cum_freq(max_index()) + c_freq(max_index());
-        };
-        // Returns min index, the first valid index.
-        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual int min_index() const = 0;
-        // Returns max index, the last valid index.
-        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual int max_index() const = 0;
-        bool index_is_valid(int index)
-        {
-            return min_index() <= index && index <= max_index();
-        }
-    };
 
     class RangeCoder
     {
@@ -96,7 +75,7 @@ namespace rangecoder
 #ifdef RANGECODER_VERBOSE
             std::cout << "  shifted out byte: "
                       << "0x"
-                      << hex_zero_filled(tmp)
+                      << local::hex_zero_filled(tmp)
                       << std::endl;
 #endif
             return tmp;
@@ -105,9 +84,9 @@ namespace rangecoder
         void print_status() const
         {
             std::cout << "        range: "
-                      << "0x" << hex_zero_filled(range()) << std::endl;
+                      << "0x" << local::hex_zero_filled(range()) << std::endl;
             std::cout << "  lower bound: "
-                      << "0x" << hex_zero_filled(lower_bound()) << std::endl;
+                      << "0x" << local::hex_zero_filled(lower_bound()) << std::endl;
         }
 
     protected:
@@ -134,7 +113,7 @@ namespace rangecoder
     private:
         auto is_no_carry_expansion_needed() -> bool
         {
-            return (m_lower_bound ^ upper_bound()) < TOP8;
+            return (m_lower_bound ^ upper_bound()) < local::TOP8;
         };
 
         auto do_no_carry_expansion() -> byte_t
@@ -147,7 +126,7 @@ namespace rangecoder
 
         auto is_range_reduction_expansion_needed() -> bool
         {
-            return m_range < TOP16;
+            return m_range < local::TOP16;
         };
 
         auto do_range_reduction_expansion() -> byte_t
@@ -155,7 +134,7 @@ namespace rangecoder
 #ifdef RANGECODER_VERBOSE
             std::cout << "  range reduction expansion" << std::endl;
 #endif
-            m_range = !(m_lower_bound & (TOP16 - 1));
+            m_range = !(m_lower_bound & (local::TOP16 - 1));
             return shift_byte();
         };
 
@@ -167,8 +146,32 @@ namespace rangecoder
         uint64_t m_lower_bound;
         uint64_t m_range;
     };
+}// namespace rangecoder::local
 
-    class RangeEncoder : RangeCoder
+    class PModel
+    {
+    public:
+        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
+        virtual range_t cum_freq(int index) const = 0;
+        // Frequency of index
+        virtual range_t c_freq(int index) const = 0;
+        range_t total_freq() const
+        {
+            return cum_freq(max_index()) + c_freq(max_index());
+        };
+        // Returns min index, the first valid index.
+        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
+        virtual int min_index() const = 0;
+        // Returns max index, the last valid index.
+        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
+        virtual int max_index() const = 0;
+        bool index_is_valid(int index)
+        {
+            return min_index() <= index && index <= max_index();
+        }
+    };
+
+    class RangeEncoder : local::RangeCoder
     {
     public:
         // Returns number of bytes stabled.
@@ -203,10 +206,10 @@ namespace rangecoder
             std::cout << "        bytes: ";
             if (m_bytes.size() > 0)
             {
-                std::cout << "0x" << hex_zero_filled(m_bytes[0]);
+                std::cout << "0x" << local::hex_zero_filled(m_bytes[0]);
                 for (auto i = 1; i < m_bytes.size(); i++)
                 {
-                    std::cout << hex_zero_filled(m_bytes[i]);
+                    std::cout << local::hex_zero_filled(m_bytes[i]);
                 }
                 std::cout << std::endl;
             }
@@ -221,7 +224,7 @@ namespace rangecoder
         std::vector<uint8_t> m_bytes;
     };
 
-    class RangeDecoder : RangeCoder
+    class RangeDecoder : local::RangeCoder
     {
     public:
         void start(std::queue<byte_t> bytes)
@@ -252,11 +255,11 @@ namespace rangecoder
         void print_status() const
         {
             std::cout << "        range: "
-                      << "0x" << hex_zero_filled(range()) << std::endl;
+                      << "0x" << local::hex_zero_filled(range()) << std::endl;
             std::cout << "  lower bound: "
-                      << "0x" << hex_zero_filled(lower_bound()) << std::endl;
+                      << "0x" << local::hex_zero_filled(lower_bound()) << std::endl;
             std::cout << "         data: "
-                      << "0x" << hex_zero_filled(m_data) << std::endl;
+                      << "0x" << local::hex_zero_filled(m_data) << std::endl;
         }
 
     private:
