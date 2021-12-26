@@ -220,7 +220,8 @@ namespace rangecoder
         void start(std::queue<byte_t> bytes)
         {
             m_bytes = std::move(bytes);
-
+        m_lower_bound = 0;
+        m_range = std::numeric_limits<range_t>::max();
             for (auto i = 0; i < 8; i++)
             {
                 shift_byte_buffer();
