@@ -1,11 +1,13 @@
 #pragma once
 #ifndef RANGECODER_H_
 #define RANGECODER_H_
-#include <stdint.h>
+#include <iomanip>
+#include <iostream>
 #include <limits>
-#include <optional>
-#include <vector>
 #include <queue>
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 namespace rangecoder
 {
@@ -72,13 +74,13 @@ namespace rangecoder
             std::cout << "  range, lower bound updated" << std::endl;
             print_status();
 #endif
-            for (auto byte = no_carry_expansion(); byte.has_value(); byte = no_carry_expansion())
+            while (is_no_carry_expansion_needed())
             {
-                bytes.push_back(byte.value());
+                bytes.push_back(do_no_carry_expansion());
             }
-            for (auto byte = range_reduction_expansion(); byte.has_value(); byte = range_reduction_expansion())
+            while (is_range_reduction_expansion_needed())
             {
-                bytes.push_back(byte.value());
+                bytes.push_back(do_range_reduction_expansion());
             }
 #ifdef RANGECODER_VERBOSE
             std::cout << "  " << bytes.size() << " byte shifted" << std::endl;
@@ -100,7 +102,7 @@ namespace rangecoder
             return tmp;
         };
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -130,35 +132,31 @@ namespace rangecoder
         };
 
     private:
-        auto no_carry_expansion() -> std::optional<byte_t>
+        auto is_no_carry_expansion_needed() -> bool
         {
-            if ((m_lower_bound ^ upper_bound()) < TOP8)
-            {
-#ifdef RANGECODER_VERBOSE
-                std::cout << "  no carry expansion" << std::endl;
-#endif
-                return std::make_optional(shift_byte());
-            }
-            else
-            {
-                return std::nullopt;
-            }
+            return (m_lower_bound ^ upper_bound()) < TOP8;
         };
 
-        auto range_reduction_expansion() -> std::optional<uint8_t>
+        auto do_no_carry_expansion() -> byte_t
         {
-            if (m_range < TOP16)
-            {
 #ifdef RANGECODER_VERBOSE
-                std::cout << "  range reduction expansion" << std::endl;
+            std::cout << "  no carry expansion" << std::endl;
 #endif
-                m_range = !(m_lower_bound & (TOP16 - 1));
-                return std::make_optional(shift_byte());
-            }
-            else
-            {
-                return std::nullopt;
-            }
+            return shift_byte();
+        };
+
+        auto is_range_reduction_expansion_needed() -> bool
+        {
+            return m_range < TOP16;
+        };
+
+        auto do_range_reduction_expansion() -> byte_t
+        {
+#ifdef RANGECODER_VERBOSE
+            std::cout << "  range reduction expansion" << std::endl;
+#endif
+            m_range = !(m_lower_bound & (TOP16 - 1));
+            return shift_byte();
         };
 
         auto upper_bound() const -> uint64_t
@@ -174,7 +172,7 @@ namespace rangecoder
     {
     public:
         // Returns number of bytes stabled.
-        auto encode(PModel &pmodel, int index) -> int
+        auto encode(const PModel &pmodel, int index) -> int
         {
             auto bytes = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
 #ifdef RANGECODER_VERBOSE
@@ -196,7 +194,7 @@ namespace rangecoder
             return m_bytes;
         }
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -240,7 +238,7 @@ namespace rangecoder
 
         // Returns index of pmodel used to encode.
         // pmodel **must** be same as used to encode.
-        auto decode(PModel &pmodel) -> int
+        auto decode(const PModel &pmodel) -> int
         {
             auto index = binary_search_encoded_index(pmodel);
             auto n = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
@@ -251,7 +249,7 @@ namespace rangecoder
             return static_cast<int>(index);
         };
 
-        void print_status()
+        void print_status() const
         {
             std::cout << "        range: "
                       << "0x" << hex_zero_filled(range()) << std::endl;
@@ -263,7 +261,7 @@ namespace rangecoder
 
     private:
         // binary search encoded index
-        auto binary_search_encoded_index(PModel &pmodel) const -> int
+        auto binary_search_encoded_index(const PModel &pmodel) const -> int
         {
             auto left = pmodel.min_index();
             auto right = pmodel.max_index();
@@ -296,7 +294,7 @@ namespace rangecoder
         range_t m_data;
     };
 
-    template <int N = 256>
+    template<int N = 256>
     class UniformDistribution : public PModel
     {
     public:
@@ -319,7 +317,7 @@ namespace rangecoder
         {
             return N - 1;
         }
-        void print()
+        void print() const
         {
             std::cout << std::endl;
             std::cout << "UNIFORM DIST" << std::endl;
@@ -330,5 +328,5 @@ namespace rangecoder
             std::cout << std::endl;
         }
     };
-}
+}// namespace rangecoder
 #endif

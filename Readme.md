@@ -17,11 +17,11 @@ Header-only range coder library.
 // (Sample implementation is available in test directory)
 class PModel : public rangecoder::PModel {
     public:
-    // Accumrate frequency of index, i.e. sum of frequency of range [min_index, index).
-    auto c_freq(int index) -> range_t const { /* omit */ }
-    auto cum_freq(int index) -> range_t const { /* omit */ }
-    auto min_index() -> int const { /* omit */ }
-    auto max_index() -> int const { /* omit */ }
+    auto c_freq(int index) const -> range_t { /* omit */ }
+    // Accumrated frequency of index, i.e. sum of frequency of range [min_index, index).
+    auto cum_freq(int index) const -> range_t { /* omit */ }
+    auto min_index() const -> int { /* omit */ }
+    auto max_index() const -> int { /* omit */ }
 
     // omit
 }

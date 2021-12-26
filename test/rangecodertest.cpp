@@ -1,8 +1,8 @@
-#include <iostream>
 #include <algorithm>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
+
 #include <gtest/gtest.h>
 
 #define RANGECODER_VERBOSE
@@ -11,7 +11,7 @@
 class FreqTable : public rangecoder::PModel
 {
 public:
-    FreqTable(std::vector<int> &data, int max_index)
+    FreqTable(const std::vector<int> &data, int max_index)
     {
         m_max_index = max_index;
         m_c_freq = std::vector<rangecoder::range_t>(max_index + 1, 0);
@@ -25,7 +25,7 @@ public:
             m_cum_freq[i + 1] = m_cum_freq[i] + m_c_freq[i];
         }
     }
-    void print()
+    void print() const
     {
         std::cout << std::endl;
         std::cout << "FREQ TABLE" << std::endl;
@@ -58,12 +58,12 @@ private:
     std::vector<rangecoder::range_t> m_cum_freq;
 };
 
-auto helper_enc_dec_freqtable(std::vector<int> &data) -> std::vector<int>
+auto helper_enc_dec_freqtable(const std::vector<int> &data) -> std::vector<int>
 {
     // pmodel
     std::cout << "create pmodel" << std::endl;
     const auto max = *std::max_element(data.begin(), data.end());
-    auto pmodel = FreqTable(data, max);
+    const auto pmodel = FreqTable(data, max);
     pmodel.print();
     // encode
     std::cout << "encode" << std::endl;
@@ -75,7 +75,7 @@ auto helper_enc_dec_freqtable(std::vector<int> &data) -> std::vector<int>
         enc.encode(pmodel, data[i]);
     }
     enc.print_status();
-    auto bytes = enc.finish();
+    const auto bytes = enc.finish();
 
     std::cout << "encoded bytes: "
               << "0x" << rangecoder::hex_zero_filled(bytes[0]);
@@ -107,11 +107,11 @@ auto helper_enc_dec_freqtable(std::vector<int> &data) -> std::vector<int>
     return decoded;
 }
 
-auto test_uniform(std::vector<int> &data) -> std::vector<int>
+auto test_uniform(const std::vector<int> &data) -> std::vector<int>
 {
     // pmodel
     std::cout << "create pmodel" << std::endl;
-    auto pmodel = rangecoder::UniformDistribution();
+    const auto pmodel = rangecoder::UniformDistribution();
     // encode
     std::cout << "encode" << std::endl;
     auto enc = rangecoder::RangeEncoder();
@@ -122,7 +122,7 @@ auto test_uniform(std::vector<int> &data) -> std::vector<int>
         enc.encode(pmodel, data[i]);
     }
     enc.print_status();
-    auto bytes = enc.finish();
+    const auto bytes = enc.finish();
 
     std::cout << "encoded bytes: "
               << "0x" << rangecoder::hex_zero_filled(bytes[0]);
@@ -156,16 +156,14 @@ auto test_uniform(std::vector<int> &data) -> std::vector<int>
 
 TEST(RangeCoderTest, EncDecTest)
 {
-    auto data =
-        std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
+    const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(helper_enc_dec_freqtable(data), data);
     std::cout << "finish" << std::endl;
 }
 
 TEST(RangeCoderTest, UniformDistributionTest)
 {
-    auto data =
-        std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
+    const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(test_uniform(data), data);
     std::cout << "finish" << std::endl;
 }
