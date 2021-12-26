@@ -200,9 +200,9 @@ namespace local
         void print_status() const
         {
             std::cout << "        range: "
-                      << "0x" << hex_zero_filled(range()) << std::endl;
+                      << "0x" << local::hex_zero_filled(range()) << std::endl;
             std::cout << "  lower bound: "
-                      << "0x" << hex_zero_filled(lower_bound()) << std::endl;
+                      << "0x" << local::hex_zero_filled(lower_bound()) << std::endl;
             std::cout << "        bytes: ";
             if (m_bytes.size() > 0)
             {
