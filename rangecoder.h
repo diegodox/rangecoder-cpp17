@@ -100,7 +100,7 @@ namespace rangecoder
                     num_bytes++;
                 }
 #ifdef RANGECODER_VERBOSE
-                std::cout << "  " << bytes.size() << " byte shifted" << std::endl;
+                std::cout << "  " << num_bytes << " byte shifted" << std::endl;
 #endif
                 return num_bytes;
             };
