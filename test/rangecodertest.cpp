@@ -78,10 +78,10 @@ auto helper_enc_dec_freqtable(const std::vector<int> &data) -> std::vector<int>
     const auto bytes = enc.finish();
 
     std::cout << "encoded bytes: "
-              << "0x" << rangecoder::hex_zero_filled(bytes[0]);
+              << "0x" << rangecoder::local::hex_zero_filled(bytes[0]);
     for (auto byte : bytes)
     {
-        std::cout << rangecoder::hex_zero_filled(byte);
+        std::cout << rangecoder::local::hex_zero_filled(byte);
     }
     std::cout << std::endl;
 
@@ -125,10 +125,10 @@ auto test_uniform(const std::vector<int> &data) -> std::vector<int>
     const auto bytes = enc.finish();
 
     std::cout << "encoded bytes: "
-              << "0x" << rangecoder::hex_zero_filled(bytes[0]);
+              << "0x" << rangecoder::local::hex_zero_filled(bytes[0]);
     for (auto byte : bytes)
     {
-        std::cout << rangecoder::hex_zero_filled(byte);
+        std::cout << rangecoder::local::hex_zero_filled(byte);
     }
     std::cout << std::endl;
 
