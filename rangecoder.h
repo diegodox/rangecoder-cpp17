@@ -314,17 +314,17 @@ namespace rangecoder
         {
             return 1;
         }
-        
+
         range_t cum_freq(const int index) const override
         {
             return index;
         }
-        
+
         int min_index() const override
         {
             return 0;
         }
-        
+
         int max_index() const override
         {
             return N - 1;
