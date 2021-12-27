@@ -16,6 +16,34 @@ namespace rangecoder
     using range_t = uint64_t;
     using byte_t = uint8_t;
 
+    class PModel
+    {
+    public:
+        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
+        virtual range_t cum_freq(int index) const = 0;
+
+        // Frequency of index
+        virtual range_t c_freq(int index) const = 0;
+
+        range_t total_freq() const
+        {
+            return cum_freq(max_index()) + c_freq(max_index());
+        };
+
+        // Returns min index, the first valid index.
+        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
+        virtual int min_index() const = 0;
+
+        // Returns max index, the last valid index.
+        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
+        virtual int max_index() const = 0;
+
+        bool index_is_valid(int index)
+        {
+            return min_index() <= index && index <= max_index();
+        }
+    };
+
     namespace local
     {
         const auto TOP8 = range_t(1) << (64 - 8);
@@ -157,34 +185,6 @@ namespace rangecoder
             uint64_t m_range;
         };
     }// namespace local
-
-    class PModel
-    {
-    public:
-        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
-        virtual range_t cum_freq(int index) const = 0;
-
-        // Frequency of index
-        virtual range_t c_freq(int index) const = 0;
-
-        range_t total_freq() const
-        {
-            return cum_freq(max_index()) + c_freq(max_index());
-        };
-
-        // Returns min index, the first valid index.
-        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual int min_index() const = 0;
-
-        // Returns max index, the last valid index.
-        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual int max_index() const = 0;
-
-        bool index_is_valid(int index)
-        {
-            return min_index() <= index && index <= max_index();
-        }
-    };
 
     class RangeEncoder : local::RangeCoder
     {
