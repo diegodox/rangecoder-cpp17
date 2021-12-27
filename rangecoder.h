@@ -2,6 +2,7 @@
 #ifndef RANGECODER_H_
 #define RANGECODER_H_
 
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -43,9 +44,14 @@ namespace rangecoder
                 m_range = std::numeric_limits<range_t>::max();
             };
 
-            auto update_param(range_t c_freq, range_t cum_freq, range_t total_freq) -> std::vector<byte_t>
+            auto update_param(
+                const PModel &pmodel, const int index, const std::function<void(byte_t)> &f = [](byte_t) {}) -> int
             {
-                auto bytes = std::vector<byte_t>();
+                const auto c_freq = pmodel.c_freq(index);
+                const auto cum_freq = pmodel.cum_freq(index);
+                const auto total_freq = pmodel.total_freq();
+
+                auto num_bytes = 0;
 
                 auto range_per_total = m_range / total_freq;
                 m_range = range_per_total * c_freq;
@@ -57,16 +63,18 @@ namespace rangecoder
 #endif
                 while (is_no_carry_expansion_needed())
                 {
-                    bytes.push_back(do_no_carry_expansion());
+                    f(do_no_carry_expansion());
+                    num_bytes++;
                 }
                 while (is_range_reduction_expansion_needed())
                 {
-                    bytes.push_back(do_range_reduction_expansion());
+                    f(do_range_reduction_expansion());
+                    num_bytes++;
                 }
 #ifdef RANGECODER_VERBOSE
                 std::cout << "  " << bytes.size() << " byte shifted" << std::endl;
 #endif
-                return bytes;
+                return num_bytes;
             };
 
             auto shift_byte() -> byte_t
@@ -184,15 +192,11 @@ namespace rangecoder
         // Returns number of bytes stabled.
         auto encode(const PModel &pmodel, int index) -> int
         {
-            auto bytes = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
+            auto n = update_param(pmodel, index, [this](auto byte) { m_bytes.push_back(byte); });
 #ifdef RANGECODER_VERBOSE
-            std::cout << "  " << bytes.size() << " byte shifted" << std::endl;
+            std::cout << "  " << n << " byte shifted" << std::endl;
 #endif
-            for (auto byte : bytes)
-            {
-                m_bytes.push_back(byte);
-            }
-            return bytes.size();
+            return n;
         };
 
         auto finish() -> std::vector<byte_t>
@@ -251,7 +255,7 @@ namespace rangecoder
         auto decode(const PModel &pmodel) -> int
         {
             auto index = binary_search_encoded_index(pmodel);
-            auto n = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
+            auto n = update_param(pmodel, index);
             for (int i = 0; i < n; i++)
             {
                 shift_byte_buffer();
