@@ -39,7 +39,7 @@ public:
     {
         return m_c_freq[index];
     }
-    rangecoder::range_t cum_freq(const int index) const
+    rangecoder::range_t cum_freq(const int index) const override
     {
         return m_cum_freq[index];
     }
