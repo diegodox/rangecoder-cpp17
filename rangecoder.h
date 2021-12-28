@@ -136,7 +136,7 @@ namespace rangecoder
 #ifdef RANGECODER_VERBOSE
                 std::cout << "  range reduction expansion" << std::endl;
 #endif
-                m_range = (!m_lower_bound) & (local::TOP16 - 1);
+                m_range = (~m_lower_bound) & (local::TOP16 - 1);
                 return shift_byte();
             };
 
