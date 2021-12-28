@@ -35,7 +35,7 @@ public:
         }
         std::cout << std::endl;
     }
-    rangecoder::range_t c_freq(const int index) const
+    rangecoder::range_t c_freq(const int index) const override
     {
         return m_c_freq[index];
     }
