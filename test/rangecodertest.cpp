@@ -154,6 +154,53 @@ auto test_uniform(const std::vector<int> &data) -> std::vector<int>
     return decoded;
 }
 
+auto test_uniform_big(const std::vector<int> &data) -> std::vector<int>
+{
+    // pmodel
+    std::cout << "create pmodel" << std::endl;
+    const auto pmodel = rangecoder::UniformDistribution<65536>();
+    // encode
+    std::cout << "encode" << std::endl;
+    auto enc = rangecoder::RangeEncoder();
+    for (int i = 0; i < data.size(); i++)
+    {
+        std::cout << std::dec << i << "  encode: " << data[i] << std::endl;
+        enc.print_status();
+        enc.encode(pmodel, data[i]);
+    }
+    enc.print_status();
+    const auto bytes = enc.finish();
+
+    std::cout << "encoded bytes: "
+              << "0x" << rangecoder::local::hex_zero_filled(bytes[0]);
+    for (auto byte : bytes)
+    {
+        std::cout << rangecoder::local::hex_zero_filled(byte);
+    }
+    std::cout << std::endl;
+
+    // decode
+    auto que = std::queue<rangecoder::byte_t>();
+    for (auto byte : bytes)
+    {
+        que.push(byte);
+    }
+    std::cout << "decode" << std::endl;
+    auto dec = rangecoder::RangeDecoder();
+    dec.start(que);
+    auto decoded = std::vector<int>();
+    for (int i = 0; i < data.size(); i++)
+    {
+        dec.print_status();
+        auto d = dec.decode(pmodel);
+        std::cout << std::dec << i << "  decode: " << d << std::endl;
+        decoded.push_back(d);
+    }
+    dec.print_status();
+    std::cout << "finish" << std::endl;
+    return decoded;
+}
+
 TEST(RangeCoderTest, EncDecTest)
 {
     const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
@@ -165,6 +212,13 @@ TEST(RangeCoderTest, UniformDistributionTest)
 {
     const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(test_uniform(data), data);
+    std::cout << "finish" << std::endl;
+}
+
+TEST(RangeCoderTest, UniformDistributionBigTest)
+{
+    const auto data = std::vector<int>{1, 2, 3, 4, 5, 65533, 3, 2, 1, 0, 3, 7};
+    EXPECT_EQ(test_uniform_big(data), data);
     std::cout << "finish" << std::endl;
 }
 
