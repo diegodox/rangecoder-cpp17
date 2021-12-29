@@ -46,8 +46,8 @@ namespace rangecoder
 
     namespace local
     {
-        const auto TOP8 = range_t(1) << (64 - 8);
-        const auto TOP16 = range_t(1) << (64 - 16);
+        constexpr auto TOP8 = range_t(1) << (64 - 8);
+        constexpr auto TOP16 = range_t(1) << (64 - 16);
 
         auto hex_zero_filled(range_t bytes) -> std::string
         {
@@ -81,7 +81,7 @@ namespace rangecoder
 
                 auto num_bytes = 0;
 
-                auto range_per_total = m_range / total_freq;
+                const auto range_per_total = m_range / total_freq;
                 m_range = range_per_total * c_freq;
                 m_lower_bound += range_per_total * cum_freq;
 
@@ -149,7 +149,7 @@ namespace rangecoder
             };
 
         private:
-            auto is_no_carry_expansion_needed() -> bool
+            auto is_no_carry_expansion_needed() const -> bool
             {
                 return (m_lower_bound ^ upper_bound()) < local::TOP8;
             };
@@ -162,7 +162,7 @@ namespace rangecoder
                 return shift_byte();
             };
 
-            auto is_range_reduction_expansion_needed() -> bool
+            auto is_range_reduction_expansion_needed() const -> bool
             {
                 return m_range < local::TOP16;
             };
@@ -172,7 +172,7 @@ namespace rangecoder
 #ifdef RANGECODER_VERBOSE
                 std::cout << "  range reduction expansion" << std::endl;
 #endif
-                m_range = !(m_lower_bound & (local::TOP16 - 1));
+                m_range = (~m_lower_bound) & (local::TOP16 - 1);
                 return shift_byte();
             };
 
@@ -190,9 +190,9 @@ namespace rangecoder
     {
     public:
         // Returns number of bytes stabled.
-        auto encode(const PModel &pmodel, int index) -> int
+        auto encode(const PModel &pmodel, const int index) -> int
         {
-            auto n = update_param(pmodel, index, [this](auto byte) { m_bytes.push_back(byte); });
+            const auto n = update_param(pmodel, index, [this](auto byte) { m_bytes.push_back(byte); });
 #ifdef RANGECODER_VERBOSE
             std::cout << "  " << n << " byte shifted" << std::endl;
 #endif
@@ -254,8 +254,8 @@ namespace rangecoder
         // pmodel **must** be same as used to encode.
         auto decode(const PModel &pmodel) -> int
         {
-            auto index = binary_search_encoded_index(pmodel);
-            auto n = update_param(pmodel, index);
+            const auto index = binary_search_encoded_index(pmodel);
+            const auto n = update_param(pmodel, index);
             for (int i = 0; i < n; i++)
             {
                 shift_byte_buffer();
@@ -279,12 +279,12 @@ namespace rangecoder
         {
             auto left = pmodel.min_index();
             auto right = pmodel.max_index();
-            auto range_per_total = range() / pmodel.total_freq();
-            auto f = (m_data - lower_bound()) / range_per_total;
+            const auto range_per_total = range() / pmodel.total_freq();
+            const auto f = (m_data - lower_bound()) / range_per_total;
             while (left < right)
             {
-                auto mid = (left + right) / 2;
-                auto mid_cum = pmodel.cum_freq(mid + 1);
+                const auto mid = (left + right) / 2;
+                const auto mid_cum = pmodel.cum_freq(mid + 1);
                 if (mid_cum <= f)
                 {
                     left = mid + 1;
@@ -299,7 +299,7 @@ namespace rangecoder
 
         void shift_byte_buffer()
         {
-            auto front_byte = m_bytes.front();
+            const auto front_byte = m_bytes.front();
             m_data = (m_data << 8) | static_cast<range_t>(front_byte);
             m_bytes.pop();
         };
@@ -312,26 +312,24 @@ namespace rangecoder
     class UniformDistribution : public PModel
     {
     public:
-        constexpr UniformDistribution()
-        {
-        }
+        UniformDistribution() = default;
 
-        range_t c_freq(int index) const
+        range_t c_freq(const int index) const override
         {
             return 1;
         }
 
-        range_t cum_freq(int index) const
+        range_t cum_freq(const int index) const override
         {
             return index;
         }
 
-        int min_index() const
+        int min_index() const override
         {
             return 0;
         }
 
-        int max_index() const
+        int max_index() const override
         {
             return N - 1;
         }
