@@ -246,6 +246,22 @@ namespace rangecoder
             }
         };
 
+        void start(std::vector<byte_t> &bytes)
+        {
+            // Convert vector to queue.
+            for (auto byte : bytes)
+            {
+                m_bytes.push(byte);
+            }
+            lower_bound(0);
+            range(std::numeric_limits<range_t>::max());
+
+            for (auto i = 0; i < 8; i++)
+            {
+                shift_byte_buffer();
+            }
+        };
+
         // Returns index of pmodel used to encode.
         // pmodel **must** be same as used to encode.
         auto decode(const PModel &pmodel) -> int
