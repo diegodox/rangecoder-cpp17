@@ -246,7 +246,7 @@ namespace rangecoder
             }
         };
 
-        void start(std::vector<byte_t> &bytes)
+        void start(const std::vector<byte_t> &bytes)
         {
             // Convert vector to queue.
             for (auto byte : bytes)
