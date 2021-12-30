@@ -342,7 +342,7 @@ auto test_uniform_16(const std::vector<int> &data) -> std::vector<int>
     return decoded;
 }
 
-auto test_fixed_length_coding(const std::vector<int> &level, const std::vector<int> &data) -> std::vector<int>
+auto test_fixed_length_coding(const std::vector<int> &num_bits, const std::vector<int> &data) -> std::vector<int>
 {
     // encode
     std::cout << "encode" << std::endl;
@@ -351,7 +351,7 @@ auto test_fixed_length_coding(const std::vector<int> &level, const std::vector<i
     {
         std::cout << std::dec << i << "  encode: " << data[i] << std::endl;
         enc.print_status();
-        enc.encode(level[i], data[i]);
+        enc.encode(num_bits[i], data[i]);
     }
     enc.print_status();
     const auto bytes = enc.finish();
@@ -372,16 +372,16 @@ auto test_fixed_length_coding(const std::vector<int> &level, const std::vector<i
     }
     std::cout << "decode" << std::endl;
     auto dec = rangecoder::RangeDecoder();
+    dec.start(que);
     auto decoded = std::vector<int>();
     for (int i = 0; i < data.size(); i++)
     {
         dec.print_status();
-        auto d = dec.decode(level[i], que);
+        auto d = dec.decode(num_bits[i]);
         std::cout << std::dec << i << "  decode: " << d << std::endl;
         decoded.push_back(d);
     }
     dec.print_status();
-    dec.start(que);
     std::cout << "finish" << std::endl;
     return decoded;
 }
@@ -437,9 +437,9 @@ TEST(RangeCoderTest, UniformDistributionBigTest)
 // test rangecoder with fixed-length coding mode.
 TEST(RangeCoderTest, FixedLengthCodingTest)
 {
-    const auto level = std::vector<int>{65536, 65536, 256, 16, 2, 2, 2, 2};
+    const auto num_bits = std::vector<int>{16, 16, 8, 4, 1, 1, 1, 1};
     const auto data = std::vector<int>{720, 512, 89, 3, 1, 0, 1, 1};
-    EXPECT_EQ(test_fixed_length_coding(level, data), data);
+    EXPECT_EQ(test_fixed_length_coding(num_bits, data), data);
     std::cout << "finish" << std::endl;
 }
 
