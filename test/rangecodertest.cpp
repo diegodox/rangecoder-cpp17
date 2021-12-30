@@ -437,8 +437,8 @@ TEST(RangeCoderTest, UniformDistributionBigTest)
 // test rangecoder with fixed-length coding mode.
 TEST(RangeCoderTest, FixedLengthCodingTest)
 {
-    const auto level = std::vector<int>{65536, 65536, 256, 16, 2, 2, 2};
-    const auto data = std::vector<int>{720, 512, 89, 3, 1, 0, 1};
+    const auto level = std::vector<int>{65536, 65536, 256, 16, 2, 2, 2, 2};
+    const auto data = std::vector<int>{720, 512, 89, 3, 1, 0, 1, 1};
     EXPECT_EQ(test_fixed_length_coding(level, data), data);
     std::cout << "finish" << std::endl;
 }
