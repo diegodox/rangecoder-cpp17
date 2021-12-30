@@ -372,16 +372,16 @@ auto test_fixed_length_coding(const std::vector<int> &level, const std::vector<i
     }
     std::cout << "decode" << std::endl;
     auto dec = rangecoder::RangeDecoder();
-    dec.start(que);
     auto decoded = std::vector<int>();
     for (int i = 0; i < data.size(); i++)
     {
         dec.print_status();
-        auto d = dec.decode(level[i]);
+        auto d = dec.decode(level[i], que);
         std::cout << std::dec << i << "  decode: " << d << std::endl;
         decoded.push_back(d);
     }
     dec.print_status();
+    dec.start(que);
     std::cout << "finish" << std::endl;
     return decoded;
 }

@@ -278,12 +278,12 @@ namespace rangecoder
             return static_cast<int>(index);
         };
 
-        auto decode(const int num_bits) -> int
+        auto decode(const int num_bits, std::queue<byte_t> &bytes) -> int
         {
             while (m_num_bits < num_bits)
             {
-                const auto byte = m_bytes.front();
-                m_bytes.pop();
+                const auto byte = bytes.front();
+                bytes.pop();
                 m_bits <<= 8;
                 m_num_bits += 8;
                 m_bits += byte;
