@@ -280,7 +280,7 @@ namespace rangecoder
 
         auto decode(const int num_bits) -> int
         {
-            while (m_num_bits > num_bits)
+            while (m_num_bits < num_bits)
             {
                 const auto byte = m_bytes.front();
                 m_bytes.pop();
