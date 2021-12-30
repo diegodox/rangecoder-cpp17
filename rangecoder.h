@@ -195,6 +195,23 @@ namespace rangecoder
             return bytes.size();
         };
 
+        auto encode(const int num_bits, const int index) -> int
+        {
+            m_bits <<= num_bits;
+            m_num_bits += num_bits;
+            m_bits += index;
+
+            while (m_num_bits >= 8)
+            {
+                const auto mask = 0xff << (m_num_bits - 8);
+                m_bytes.push_back(m_bits & mask);
+                m_bits &= ~mask;
+                m_num_bits -= 8;
+            }
+
+            return num_bits;
+        }
+
         auto finish() -> std::vector<byte_t>
         {
             for (auto i = 0; i < 8; i++)
@@ -229,6 +246,8 @@ namespace rangecoder
 
     private:
         std::vector<uint8_t> m_bytes;
+        uint8_t m_num_bits{};
+        uint64_t m_bits{};
     };
 
     class RangeDecoder : local::RangeCoder
@@ -258,6 +277,25 @@ namespace rangecoder
             }
             return static_cast<int>(index);
         };
+
+        auto decode(const int num_bits) -> int
+        {
+            while (m_num_bits >= num_bits)
+            {
+                const auto byte = m_bytes.front();
+                m_bytes.pop();
+                m_bits <<= 8;
+                m_num_bits += 8;
+                m_bits += byte;
+            }
+
+            const auto mask = ((1 << (num_bits + 1)) - 1) << (m_num_bits - num_bits);
+            const auto index = m_bits & mask;
+            m_bits &= ~mask;
+            m_num_bits -= num_bits;
+
+            return index;
+        }
 
         void print_status() const
         {
@@ -302,6 +340,8 @@ namespace rangecoder
 
         std::queue<byte_t> m_bytes;
         range_t m_data;
+        uint8_t m_num_bits{};
+        uint64_t m_bits{};
     };
 
     template<int N = 256>
