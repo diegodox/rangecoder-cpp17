@@ -395,7 +395,7 @@ TEST(RangeCoderTest, EncDecTest)
 }
 
 // test rangecoder with frequency table, decoder called `decoder.start(vector)`.
-TEST(RangeCoderTest, EncDecTest)
+TEST(RangeCoderTest, EncDecTestVectorStart)
 {
     const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(helper_enc_dec_freqtable_start_vector(data), data);
