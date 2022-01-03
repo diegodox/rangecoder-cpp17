@@ -15,6 +15,11 @@ namespace rangecoder
     using range_t = uint64_t;
     using byte_t = uint8_t;
 
+    enum RangeCoderVerbose {
+        SILENT = false,
+        VERBOSE = true,
+    };
+
     namespace local
     {
         constexpr auto TOP8 = range_t(1) << (64 - 8);
@@ -43,6 +48,7 @@ namespace rangecoder
                 m_range = std::numeric_limits<range_t>::max();
             };
 
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto update_param(range_t c_freq, range_t cum_freq, range_t total_freq) -> std::vector<byte_t>
             {
                 auto bytes = std::vector<byte_t>();
@@ -51,44 +57,47 @@ namespace rangecoder
                 m_range = range_per_total * c_freq;
                 m_lower_bound += range_per_total * cum_freq;
 
-#ifdef RANGECODER_VERBOSE
-                std::cout << "  range, lower bound updated" << std::endl;
-                print_status();
-#endif
+                if constexpr (RANGECODER_VERBOSE)
+                {
+                    std::cout << "  range, lower bound updated" << std::endl;
+                    print_status();
+                }
                 while (is_no_carry_expansion_needed())
                 {
-                    bytes.push_back(do_no_carry_expansion());
+                    bytes.push_back(do_no_carry_expansion<RANGECODER_VERBOSE>());
                 }
                 while (is_range_reduction_expansion_needed())
                 {
-                    bytes.push_back(do_range_reduction_expansion());
+                    bytes.push_back(do_range_reduction_expansion<RANGECODER_VERBOSE>());
                 }
-#ifdef RANGECODER_VERBOSE
-                std::cout << "  " << bytes.size() << " byte shifted" << std::endl;
-#endif
+                if constexpr (RANGECODER_VERBOSE)
+                {
+                    std::cout << "  total: " << bytes.size() << " byte shifted" << std::endl;
+                }
                 return bytes;
             };
 
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto shift_byte() -> byte_t
             {
                 auto tmp = static_cast<byte_t>(m_lower_bound >> (64 - 8));
                 m_range <<= 8;
                 m_lower_bound <<= 8;
-#ifdef RANGECODER_VERBOSE
-                std::cout << "  shifted out byte: "
-                          << "0x"
-                          << local::hex_zero_filled(tmp)
-                          << std::endl;
-#endif
+                if constexpr (RANGECODER_VERBOSE)
+                {
+                    std::cout << "  shifted out byte: "
+                              << "0x"
+                              << local::hex_zero_filled(tmp)
+                              << std::endl;
+                }
                 return tmp;
             };
 
             void print_status() const
             {
-                std::cout << "        range: "
-                          << "0x" << local::hex_zero_filled(range()) << std::endl;
-                std::cout << "  lower bound: "
-                          << "0x" << local::hex_zero_filled(lower_bound()) << std::endl;
+                std::cout << "        range: 0x" << local::hex_zero_filled(range()) << std::endl;
+                std::cout << "  lower bound: 0x" << local::hex_zero_filled(lower_bound()) << std::endl;
+                std::cout << "  upper bound: 0x" << local::hex_zero_filled(upper_bound()) << std::endl;
             }
 
         protected:
@@ -112,18 +121,25 @@ namespace rangecoder
                 return m_range;
             };
 
+            auto upper_bound() const -> uint64_t
+            {
+                return m_lower_bound + m_range;
+            };
+
         private:
             auto is_no_carry_expansion_needed() const -> bool
             {
                 return (m_lower_bound ^ upper_bound()) < local::TOP8;
             };
 
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto do_no_carry_expansion() -> byte_t
             {
-#ifdef RANGECODER_VERBOSE
-                std::cout << "  no carry expansion" << std::endl;
-#endif
-                return shift_byte();
+                if constexpr (RANGECODER_VERBOSE)
+                {
+                    std::cout << "  no carry expansion" << std::endl;
+                }
+                return shift_byte<RANGECODER_VERBOSE>();
             };
 
             auto is_range_reduction_expansion_needed() const -> bool
@@ -131,18 +147,15 @@ namespace rangecoder
                 return m_range < local::TOP16;
             };
 
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto do_range_reduction_expansion() -> byte_t
             {
-#ifdef RANGECODER_VERBOSE
-                std::cout << "  range reduction expansion" << std::endl;
-#endif
+                if constexpr (RANGECODER_VERBOSE)
+                {
+                    std::cout << "  range reduction expansion" << std::endl;
+                }
                 m_range = (~m_lower_bound) & (local::TOP16 - 1);
-                return shift_byte();
-            };
-
-            auto upper_bound() const -> uint64_t
-            {
-                return m_lower_bound + m_range;
+                return shift_byte<RANGECODER_VERBOSE>();
             };
 
             uint64_t m_lower_bound;
@@ -182,48 +195,54 @@ namespace rangecoder
     {
     public:
         // Returns number of bytes stabled.
+        template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto encode(const PModel &pmodel, const int index) -> int
         {
-            const auto bytes = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
-#ifdef RANGECODER_VERBOSE
-            std::cout << "  " << bytes.size() << " byte shifted" << std::endl;
-#endif
+            if constexpr (RANGECODER_VERBOSE)
+            {
+                std::cout << "  encode: " << index << std::endl;
+                print_status();
+            }
+            const auto bytes = update_param<RANGECODER_VERBOSE>(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
             for (const auto byte : bytes)
             {
                 m_bytes.push_back(byte);
             }
+            if constexpr (RANGECODER_VERBOSE)
+            {
+                std::cout << "  encode: " << index << " done" << std::endl
+                          << std::endl;
+            }
             return bytes.size();
         };
 
+        template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto finish() -> std::vector<byte_t>
         {
             for (auto i = 0; i < 8; i++)
             {
-                m_bytes.push_back(shift_byte());
+                m_bytes.push_back(shift_byte<RANGECODER_VERBOSE>());
             }
             return m_bytes;
         }
 
         void print_status() const
         {
-            std::cout << "        range: "
-                      << "0x" << local::hex_zero_filled(range()) << std::endl;
-            std::cout << "  lower bound: "
-                      << "0x" << local::hex_zero_filled(lower_bound()) << std::endl;
-            std::cout << "        bytes: ";
-            if (m_bytes.size() > 0)
+            std::cout << "        range: 0x" << local::hex_zero_filled(range()) << std::endl;
+            std::cout << "  lower bound: 0x" << local::hex_zero_filled(lower_bound()) << std::endl;
+            std::cout << "  upper bound: 0x" << local::hex_zero_filled(upper_bound()) << std::endl;
+            if (m_bytes.empty())
             {
-                std::cout << "0x" << local::hex_zero_filled(m_bytes[0]);
-                for (auto i = 1; i < m_bytes.size(); i++)
-                {
-                    std::cout << local::hex_zero_filled(m_bytes[i]);
-                }
-                std::cout << std::endl;
+                std::cout << "        bytes: NULL" << std::endl;
             }
             else
             {
-                std::cout << "NULL" << std::endl;
-                ;
+                std::cout << "        bytes: 0x";
+                for (const auto byte : m_bytes)
+                {
+                    std::cout << local::hex_zero_filled(byte);
+                }
+                std::cout << std::endl;
             }
         }
 
@@ -264,47 +283,95 @@ namespace rangecoder
 
         // Returns index of pmodel used to encode.
         // pmodel **must** be same as used to encode.
+        template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto decode(const PModel &pmodel) -> int
         {
-            const auto index = binary_search_encoded_index(pmodel);
-            const auto n = update_param(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
+            if constexpr (RANGECODER_VERBOSE)
+            {
+                std::cout << "  decode: unknown " << std::endl;
+                print_status();
+            }
+            const auto index = binary_search_encoded_index<RANGECODER_VERBOSE>(pmodel);
+            const auto n = update_param<RANGECODER_VERBOSE>(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
             for (int i = 0; i < n; i++)
             {
                 shift_byte_buffer();
+            }
+            if constexpr (RANGECODER_VERBOSE)
+            {
+                std::cout << "  decode: " << index << " done" << std::endl;
+                std::cout << std::endl;
             }
             return static_cast<int>(index);
         };
 
         void print_status() const
         {
-            std::cout << "        range: "
-                      << "0x" << local::hex_zero_filled(range()) << std::endl;
-            std::cout << "  lower bound: "
-                      << "0x" << local::hex_zero_filled(lower_bound()) << std::endl;
-            std::cout << "         data: "
-                      << "0x" << local::hex_zero_filled(m_data) << std::endl;
+            std::cout << "        range: 0x" << local::hex_zero_filled(range()) << std::endl;
+            std::cout << "  lower bound: 0x" << local::hex_zero_filled(lower_bound()) << std::endl;
+            std::cout << "  upper bound: 0x" << local::hex_zero_filled(upper_bound()) << std::endl;
+            std::cout << "         data: 0x" << local::hex_zero_filled(m_data) << std::endl;
         }
 
     private:
         // binary search encoded index
+        template<RangeCoderVerbose RANGECODER_VERBOSE>
         auto binary_search_encoded_index(const PModel &pmodel) const -> int
         {
             auto left = pmodel.min_index();
             auto right = pmodel.max_index();
             const auto range_per_total = range() / pmodel.total_freq();
             const auto f = (m_data - lower_bound()) / range_per_total;
+
+            if constexpr (RANGECODER_VERBOSE)
+            {
+                std::cout << "  --------- BINARY SEARCH ---------" << std::endl;
+                std::cout << "  find cum: (data: 0x"
+                          << local::hex_zero_filled(m_data)
+                          << " - lower bound: 0x"
+                          << local::hex_zero_filled(lower_bound())
+                          << ")"
+                          << std::endl
+                          << "            / range_per_total: 0x"
+                          << local::hex_zero_filled(range_per_total)
+                          << " = "
+                          << f
+                          << std::endl;
+                std::cout << "  binary search encoded index: " << left << " " << right << std::endl;
+            }
+
             while (left < right)
             {
                 const auto mid = (left + right) / 2;
                 const auto mid_cum = pmodel.cum_freq(mid + 1);
+
+                if constexpr (RANGECODER_VERBOSE)
+                {
+                    std::cout << "  middle index: (left: " << left << " + right: " << right << " ) / 2 = " << mid
+                              << ", cum at middle: " << mid_cum << std::endl;
+                }
+
                 if (mid_cum <= f)
                 {
+                    if constexpr (RANGECODER_VERBOSE)
+                    {
+                        std::cout << "  target contains between left:" << left << " middle: " << mid << std::endl;
+                    }
                     left = mid + 1;
                 }
                 else
                 {
+                    if constexpr (RANGECODER_VERBOSE)
+                    {
+                        std::cout << "  target contains between middle:" << mid << " right: " << right << std::endl;
+                    }
                     right = mid;
                 }
+            }
+            if constexpr (RANGECODER_VERBOSE)
+            {
+                std::cout << "  find! left: " << left << "= right: " << right << std::endl;
+                std::cout << "  --------- BINARY SEARCH FINISH ---------" << std::endl;
             }
             return left;
         };

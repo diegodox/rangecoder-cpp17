@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <string>
 
 #include <gtest/gtest.h>
 
-#define RANGECODER_VERBOSE
 #include "../rangecoder.h"
 
 class FreqTable : public rangecoder::PModel
@@ -440,6 +440,71 @@ TEST(RangeCoderTest, UniformDistributionBigTest)
     const auto data = std::vector<int>{1, 2, 3, 4, 5, 65533, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(test_uniform_big(data), data);
     std::cout << "finish" << std::endl;
+}
+
+TEST(RangeCoderDebug, ReproductionTest)
+{
+    const auto ud_4bit = rangecoder::UniformDistribution<16>();
+    const auto ud_8bit = rangecoder::UniformDistribution<256>();
+    const auto ud_16bit = rangecoder::UniformDistribution<65536>();
+
+    const auto width = 256;
+    const auto height = 256;
+    const auto num_dists = 64 + 25;
+    const auto radius = 3;
+    const auto num_units = 8;
+
+    auto encoder = rangecoder::RangeEncoder();
+    encoder.encode<rangecoder::VERBOSE>(ud_16bit, width - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_16bit, height - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_8bit, num_dists - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_4bit, radius - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_4bit, num_units - 1);
+    for (auto i = 0; i < 4; ++i)
+    {
+        encoder.encode(ud_8bit, 0);// ! padding !
+    }
+
+    // encode something to emulate real encoder.
+    const auto seed = 12345;
+    const int len = width * height;
+    std::mt19937 rng(seed);
+    std::uniform_int_distribution<int> rand_binary(0, 255);
+    auto gen = [&rand_binary, &rng]() { return rand_binary(rng); };
+    for (auto i = 0; i < len; ++i)
+    {
+        std::cout << "\rencode dummy bits: " << i << "/" << len << ' ' << std::flush;
+        encoder.encode(ud_8bit, gen());
+    }
+    std::cout << "done" << std::endl;
+
+    auto data = encoder.finish();
+
+    auto decoder = rangecoder::RangeDecoder();
+    decoder.start(data);
+    const auto width_m1 = decoder.decode<rangecoder::VERBOSE>(ud_16bit);
+    const auto height_m1 = decoder.decode<rangecoder::VERBOSE>(ud_16bit);
+    const auto num_dists_m1 = decoder.decode<rangecoder::VERBOSE>(ud_8bit);
+    const auto radius_m1 = decoder.decode<rangecoder::VERBOSE>(ud_4bit);
+    const auto num_units_m1 = decoder.decode<rangecoder::VERBOSE>(ud_4bit);
+    for (auto i = 0; i < 4; ++i)
+    {
+        decoder.decode(ud_8bit);
+    }
+
+    EXPECT_EQ(width_m1, width - 1);
+    EXPECT_EQ(height_m1, height - 1);
+    EXPECT_EQ(num_dists_m1, num_dists - 1);
+    EXPECT_EQ(radius_m1, radius - 1);
+    EXPECT_EQ(num_units_m1, num_units - 1);
+
+    std::cout << "----------- Result -----------" << std::endl;
+    std::cout << "width: " << width << ", " << width_m1 + 1 << std::endl;
+    std::cout << "height: " << height << ", " << height_m1 + 1 << std::endl;
+    std::cout << "num_dists: " << num_dists << ", " << num_dists_m1 + 1 << std::endl;
+    std::cout << "radius: " << radius << ", " << radius_m1 + 1 << std::endl;
+    std::cout << "num_units: " << num_units << ", " << num_units_m1 + 1 << std::endl;
+    std::cout << "------------------------------" << std::endl;
 }
 
 int main(int argc, char **argv)
