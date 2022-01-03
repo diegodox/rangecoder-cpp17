@@ -286,7 +286,7 @@ namespace rangecoder
         template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto decode(const PModel &pmodel) -> int
         {
-            if constexpr (RANGECODER_VERBOSE == VERBOSE)
+            if constexpr (RANGECODER_VERBOSE)
             {
                 std::cout << "  decode: unknown " << std::endl;
                 print_status();
@@ -297,7 +297,7 @@ namespace rangecoder
             {
                 shift_byte_buffer();
             }
-            if constexpr (RANGECODER_VERBOSE == VERBOSE)
+            if constexpr (RANGECODER_VERBOSE)
             {
                 std::cout << "  decode: " << index << " done" << std::endl;
                 std::cout << std::endl;
