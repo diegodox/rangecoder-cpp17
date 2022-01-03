@@ -15,6 +15,11 @@ namespace rangecoder
     using range_t = uint64_t;
     using byte_t = uint8_t;
 
+    enum RangeCoderVerbose {
+        SILENT = false,
+        VERBOSE = true,
+    };
+
     namespace local
     {
         constexpr auto TOP8 = range_t(1) << (64 - 8);
@@ -43,7 +48,7 @@ namespace rangecoder
                 m_range = std::numeric_limits<range_t>::max();
             };
 
-            template<bool RANGECODER_VERBOSE>
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto update_param(range_t c_freq, range_t cum_freq, range_t total_freq) -> std::vector<byte_t>
             {
                 auto bytes = std::vector<byte_t>();
@@ -72,7 +77,7 @@ namespace rangecoder
                 return bytes;
             };
 
-            template<bool RANGECODER_VERBOSE>
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto shift_byte() -> byte_t
             {
                 auto tmp = static_cast<byte_t>(m_lower_bound >> (64 - 8));
@@ -127,7 +132,7 @@ namespace rangecoder
                 return (m_lower_bound ^ upper_bound()) < local::TOP8;
             };
 
-            template<bool RANGECODER_VERBOSE>
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto do_no_carry_expansion() -> byte_t
             {
                 if constexpr (RANGECODER_VERBOSE)
@@ -142,7 +147,7 @@ namespace rangecoder
                 return m_range < local::TOP16;
             };
 
-            template<bool RANGECODER_VERBOSE>
+            template<RangeCoderVerbose RANGECODER_VERBOSE>
             auto do_range_reduction_expansion() -> byte_t
             {
                 if constexpr (RANGECODER_VERBOSE)
@@ -190,7 +195,7 @@ namespace rangecoder
     {
     public:
         // Returns number of bytes stabled.
-        template<bool RANGECODER_VERBOSE = false>
+        template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto encode(const PModel &pmodel, const int index) -> int
         {
             if constexpr (RANGECODER_VERBOSE)
@@ -211,7 +216,7 @@ namespace rangecoder
             return bytes.size();
         };
 
-        template<bool RANGECODER_VERBOSE = false>
+        template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto finish() -> std::vector<byte_t>
         {
             for (auto i = 0; i < 8; i++)
@@ -278,10 +283,10 @@ namespace rangecoder
 
         // Returns index of pmodel used to encode.
         // pmodel **must** be same as used to encode.
-        template<bool RANGECODER_VERBOSE = false>
+        template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
         auto decode(const PModel &pmodel) -> int
         {
-            if constexpr (RANGECODER_VERBOSE)
+            if constexpr (RANGECODER_VERBOSE == VERBOSE)
             {
                 std::cout << "  decode: unknown " << std::endl;
                 print_status();
@@ -292,7 +297,7 @@ namespace rangecoder
             {
                 shift_byte_buffer();
             }
-            if constexpr (RANGECODER_VERBOSE)
+            if constexpr (RANGECODER_VERBOSE == VERBOSE)
             {
                 std::cout << "  decode: " << index << " done" << std::endl;
                 std::cout << std::endl;
@@ -310,7 +315,7 @@ namespace rangecoder
 
     private:
         // binary search encoded index
-        template<bool RANGECODER_VERBOSE>
+        template<RangeCoderVerbose RANGECODER_VERBOSE>
         auto binary_search_encoded_index(const PModel &pmodel) const -> int
         {
             auto left = pmodel.min_index();

@@ -455,11 +455,11 @@ TEST(RangeCoderDebug, ReproductionTest)
     const auto num_units = 8;
 
     auto encoder = rangecoder::RangeEncoder();
-    encoder.encode<true>(ud_16bit, width - 1);
-    encoder.encode<true>(ud_16bit, height - 1);
-    encoder.encode<true>(ud_8bit, num_dists - 1);
-    encoder.encode<true>(ud_4bit, radius - 1);
-    encoder.encode<true>(ud_4bit, num_units - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_16bit, width - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_16bit, height - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_8bit, num_dists - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_4bit, radius - 1);
+    encoder.encode<rangecoder::VERBOSE>(ud_4bit, num_units - 1);
     for (auto i = 0; i < 4; ++i)
     {
         encoder.encode(ud_8bit, 0);// ! padding !
@@ -482,11 +482,11 @@ TEST(RangeCoderDebug, ReproductionTest)
 
     auto decoder = rangecoder::RangeDecoder();
     decoder.start(data);
-    const auto width_m1 = decoder.decode<true>(ud_16bit);
-    const auto height_m1 = decoder.decode<true>(ud_16bit);
-    const auto num_dists_m1 = decoder.decode<true>(ud_8bit);
-    const auto radius_m1 = decoder.decode<true>(ud_4bit);
-    const auto num_units_m1 = decoder.decode<true>(ud_4bit);
+    const auto width_m1 = decoder.decode<rangecoder::VERBOSE>(ud_16bit);
+    const auto height_m1 = decoder.decode<rangecoder::VERBOSE>(ud_16bit);
+    const auto num_dists_m1 = decoder.decode<rangecoder::VERBOSE>(ud_8bit);
+    const auto radius_m1 = decoder.decode<rangecoder::VERBOSE>(ud_4bit);
+    const auto num_units_m1 = decoder.decode<rangecoder::VERBOSE>(ud_4bit);
     for (auto i = 0; i < 4; ++i)
     {
         decoder.decode(ud_8bit);
