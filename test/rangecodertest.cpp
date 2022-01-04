@@ -1,3 +1,5 @@
+#include "../rangecoder.h"
+
 #include <algorithm>
 #include <iostream>
 #include <random>
@@ -5,8 +7,6 @@
 #include <string>
 
 #include <gtest/gtest.h>
-
-#include "../rangecoder.h"
 
 class FreqTable : public rangecoder::PModel
 {
