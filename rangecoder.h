@@ -227,6 +227,17 @@ namespace rangecoder
             return m_bytes;
         }
 
+        friend std::ostream &operator<<(std::ostream &os, RangeEncoder &re)
+        {
+            auto data = re.finish();
+            // write all bytes in data to ostream
+            for (const auto byte : data)
+            {
+                os << byte;
+            }
+            return os;
+        }
+
         void print_status() const
         {
             std::cout << "        range: 0x" << local::hex_zero_filled(range()) << std::endl;
@@ -254,6 +265,26 @@ namespace rangecoder
     class RangeDecoder : local::RangeCoder
     {
     public:
+        void start(std::istream &is)
+        {
+            std::queue<byte_t> empty;
+            m_bytes.swap(empty);
+
+            // read bytes from isteram into m_bytes
+            // until reach to eof
+            while (is.good())
+            {
+                m_bytes.push(is.get());
+            }
+            lower_bound(0);
+            range(std::numeric_limits<range_t>::max());
+
+            for (auto i = 0; i < 8; i++)
+            {
+                shift_byte_buffer();
+            }
+        }
+
         void start(std::queue<byte_t> bytes)
         {
             m_bytes = std::move(bytes);
@@ -312,6 +343,12 @@ namespace rangecoder
             std::cout << "  lower bound: 0x" << local::hex_zero_filled(lower_bound()) << std::endl;
             std::cout << "  upper bound: 0x" << local::hex_zero_filled(upper_bound()) << std::endl;
             std::cout << "         data: 0x" << local::hex_zero_filled(m_data) << std::endl;
+        }
+
+        friend std::istream &operator>>(std::istream &is, RangeDecoder &rd)
+        {
+            rd.start(is);
+            return is;
         }
 
     private:
@@ -425,5 +462,6 @@ namespace rangecoder
             std::cout << std::endl;
         }
     };
+
 }// namespace rangecoder
 #endif
