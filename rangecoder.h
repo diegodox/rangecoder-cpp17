@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <sstream>
 #include <stdint.h>
 #include <string>
 #include <vector>
