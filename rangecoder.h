@@ -2,6 +2,7 @@
 #ifndef RANGECODER_H_
 #define RANGECODER_H_
 
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -15,6 +16,34 @@ namespace rangecoder
 {
     using range_t = uint64_t;
     using byte_t = uint8_t;
+
+    class PModel
+    {
+    public:
+        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
+        virtual range_t cum_freq(int index) const = 0;
+
+        // Frequency of index
+        virtual range_t c_freq(int index) const = 0;
+
+        range_t total_freq() const
+        {
+            return cum_freq(max_index()) + c_freq(max_index());
+        };
+
+        // Returns min index, the first valid index.
+        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
+        virtual int min_index() const = 0;
+
+        // Returns max index, the last valid index.
+        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
+        virtual int max_index() const = 0;
+
+        bool index_is_valid(int index)
+        {
+            return min_index() <= index && index <= max_index();
+        }
+    };
 
     enum RangeCoderVerbose {
         SILENT = false,
@@ -50,9 +79,14 @@ namespace rangecoder
             };
 
             template<RangeCoderVerbose RANGECODER_VERBOSE>
-            auto update_param(range_t c_freq, range_t cum_freq, range_t total_freq) -> std::vector<byte_t>
+            auto update_param(
+                const PModel &pmodel, const int index, const std::function<void(byte_t)> &f = [](byte_t) {}) -> int
             {
-                auto bytes = std::vector<byte_t>();
+                const auto c_freq = pmodel.c_freq(index);
+                const auto cum_freq = pmodel.cum_freq(index);
+                const auto total_freq = pmodel.total_freq();
+
+                auto num_bytes = 0;
 
                 const auto range_per_total = m_range / total_freq;
                 m_range = range_per_total * c_freq;
@@ -63,19 +97,22 @@ namespace rangecoder
                     std::cout << "  range, lower bound updated" << std::endl;
                     print_status();
                 }
+
                 while (is_no_carry_expansion_needed())
                 {
-                    bytes.push_back(do_no_carry_expansion<RANGECODER_VERBOSE>());
+                    f(do_no_carry_expansion<RANGECODER_VERBOSE>());
+                    num_bytes++;
                 }
                 while (is_range_reduction_expansion_needed())
                 {
-                    bytes.push_back(do_range_reduction_expansion<RANGECODER_VERBOSE>());
+                    f(do_range_reduction_expansion<RANGECODER_VERBOSE>());
+                    num_bytes++;
                 }
                 if constexpr (RANGECODER_VERBOSE)
                 {
-                    std::cout << "  total: " << bytes.size() << " byte shifted" << std::endl;
+                    std::cout << "  total: " << num_bytes << " byte shifted" << std::endl;
                 }
-                return bytes;
+                return num_bytes;
             };
 
             template<RangeCoderVerbose RANGECODER_VERBOSE>
@@ -164,34 +201,6 @@ namespace rangecoder
         };
     }// namespace local
 
-    class PModel
-    {
-    public:
-        // Accumulated frequency of index, i.e. sum of frequency of range [min_index, index).
-        virtual range_t cum_freq(int index) const = 0;
-
-        // Frequency of index
-        virtual range_t c_freq(int index) const = 0;
-
-        range_t total_freq() const
-        {
-            return cum_freq(max_index()) + c_freq(max_index());
-        };
-
-        // Returns min index, the first valid index.
-        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual int min_index() const = 0;
-
-        // Returns max index, the last valid index.
-        // All index 'i', that satisfy 'pmodel.min_index() <= i <= pmodel.max_index()' must be valid index.
-        virtual int max_index() const = 0;
-
-        bool index_is_valid(int index)
-        {
-            return min_index() <= index && index <= max_index();
-        }
-    };
-
     class RangeEncoder : local::RangeCoder
     {
     public:
@@ -204,17 +213,13 @@ namespace rangecoder
                 std::cout << "  encode: " << index << std::endl;
                 print_status();
             }
-            const auto bytes = update_param<RANGECODER_VERBOSE>(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq());
-            for (const auto byte : bytes)
-            {
-                m_bytes.push_back(byte);
-            }
+            const auto n = update_param<RANGECODER_VERBOSE>(pmodel, index, [this](auto byte) { m_bytes.push_back(byte); });
             if constexpr (RANGECODER_VERBOSE)
             {
                 std::cout << "  encode: " << index << " done" << std::endl
                           << std::endl;
             }
-            return bytes.size();
+            return n;
         };
 
         template<RangeCoderVerbose RANGECODER_VERBOSE = SILENT>
@@ -324,7 +329,7 @@ namespace rangecoder
                 print_status();
             }
             const auto index = binary_search_encoded_index<RANGECODER_VERBOSE>(pmodel);
-            const auto n = update_param<RANGECODER_VERBOSE>(pmodel.c_freq(index), pmodel.cum_freq(index), pmodel.total_freq()).size();
+            const auto n = update_param<RANGECODER_VERBOSE>(pmodel, index);
             for (int i = 0; i < n; i++)
             {
                 shift_byte_buffer();
