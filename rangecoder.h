@@ -44,7 +44,7 @@ namespace rangecoder
             return min_index() <= index && index <= max_index();
         }
     };
-      
+
     enum RangeCoderVerbose {
         SILENT = false,
         VERBOSE = true,
@@ -97,6 +97,7 @@ namespace rangecoder
                     std::cout << "  range, lower bound updated" << std::endl;
                     print_status();
                 }
+
                 while (is_no_carry_expansion_needed())
                 {
                     f(do_no_carry_expansion<RANGECODER_VERBOSE>());
@@ -109,7 +110,7 @@ namespace rangecoder
                 }
                 if constexpr (RANGECODER_VERBOSE)
                 {
-                    std::cout << "  total: " << bytes.size() << " byte shifted" << std::endl;
+                    std::cout << "  total: " << num_bytes << " byte shifted" << std::endl;
                 }
                 return num_bytes;
             };
