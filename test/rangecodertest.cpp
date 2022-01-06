@@ -1,6 +1,7 @@
 #include "../rangecoder.h"
 
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -440,6 +441,32 @@ TEST(RangeCoderTest, UniformDistributionBigTest)
     const auto data = std::vector<int>{1, 2, 3, 4, 5, 65533, 3, 2, 1, 0, 3, 7};
     EXPECT_EQ(test_uniform_big(data), data);
     std::cout << "finish" << std::endl;
+}
+
+TEST(RangeCoderIOTest, FileReadWriteTest)
+{
+    const auto data = std::vector<int>{1, 2, 3, 4, 5, 8, 3, 2, 1, 0, 3, 7};
+    // encode and write file
+    {
+        std::ofstream ofs("./test.dat", std::ios::binary);
+        rangecoder::RangeEncoder enc;
+        for (int i = 0; i < data.size(); i++)
+        {
+            enc.encode(rangecoder::UniformDistribution<16>(), data[i]);
+        }
+        ofs << enc;
+    }
+    {
+        std::ifstream ifs("./test.dat", std::ios::binary);
+        rangecoder::RangeDecoder dec;
+        ifs >> dec;
+        auto decoded = std::vector<int>();
+        for (int i = 0; i < data.size(); i++)
+        {
+            decoded.push_back(dec.decode(rangecoder::UniformDistribution<16>()));
+        }
+        EXPECT_EQ(decoded, data);
+    }
 }
 
 TEST(RangeCoderDebug, ReproductionTest)
