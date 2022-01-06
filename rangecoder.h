@@ -229,7 +229,7 @@ namespace rangecoder
 
         friend std::ostream &operator<<(std::ostream &os, RangeEncoder &re)
         {
-            auto data = re.finish();
+            const auto data = re.finish();
             // write all bytes in data to ostream
             for (const auto byte : data)
             {
